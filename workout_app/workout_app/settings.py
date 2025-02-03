@@ -41,7 +41,7 @@ INSTALLED_APPS = [
     'users',
     'rest_framework',
     'rest_framework_simplejwt',
-    'rest_framework_simplejwt.tomken_blacklist',
+    'rest_framework_simplejwt.token_blacklist',
     'drf_yasg',
 ]
 
@@ -81,8 +81,10 @@ WSGI_APPLICATION = 'workout_app.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'workout_app',
+        'USER': 'Beka',
+        'PASSWORD': 'Bekusha123',
     }
 }
 

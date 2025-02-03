@@ -26,7 +26,7 @@ class LoginView(APIView):
         request_body=LoginSerializer,
         responses={
             200: openapi.Response('Login was successful', schema=openapi.Schema(
-                type=openapi.TYPE_OBJECST,
+                type=openapi.TYPE_OBJECT,
                 properties={
                     'refresh': openapi.Schema(type=openapi.TYPE_STRING),
                     'access': openapi.Schema(type=openapi.TYPE_STRING),
@@ -66,33 +66,28 @@ class LogoutView(APIView):
                 type=openapi.TYPE_OBJECT,
                 properties={
                     'refresh': openapi.Schema(type=openapi.TYPE_STRING),
-                    'access': openapi.Schema(type=openapi.TYPE_STRING)
                 }
             ),
             responses={
                 200: 'Successfully logged out!',
                 400: 'Invalid token.'
             },
-            operation_description="Logout the user and invalidate the refresh and access tokens."
+            operation_description="Logout the user by invalidating the refresh token."
     )
     def post(self, request):
         try:
             refresh = request.data.get('refresh')
-            access = request.data.get('access')
             
-            if not refresh or not access:
+            if not refresh:
                 return Response({
-                    'message': 'refresh and acces tokens are required.',
+                    'message': 'refresh token is required.',
                 }, status=status.HTTP_400_BAD_REQUEST)
             
             refresh = RefreshToken(refresh)
             refresh.blacklist()
 
-            access = RefreshToken(access)
-            access.blacklist()
-
             return Response({
-                'message': 'Successfully loggeed out.',
+                'message': 'Successfully logged out.',
             }, status=status.HTTP_200_OK)
 
         except Exception as e:
