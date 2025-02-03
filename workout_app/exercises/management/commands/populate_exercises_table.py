@@ -2,6 +2,8 @@ from django.core.management.base import BaseCommand
 from exercises.models import Exercises
 
 class Command(BaseCommand):
+    help = 'Populate the exercises table with initial data'
+
     def handle(self, *args, **kwargs):
         exercises=[
             {
