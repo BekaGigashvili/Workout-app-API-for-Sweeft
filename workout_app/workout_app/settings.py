@@ -86,6 +86,8 @@ DATABASES = {
         'NAME': 'workout_app',
         'USER': 'Beka',
         'PASSWORD': 'Bekusha123',
+        'HOST': 'localhost',
+        'PORT': '5432',
     }
 }
 
