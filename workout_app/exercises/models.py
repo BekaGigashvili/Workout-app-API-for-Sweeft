@@ -35,7 +35,7 @@ class WorkoutPlan(models.Model):
     
 class PersonalizedExercise(models.Model):
     workout_plan = models.ForeignKey(WorkoutPlan, on_delete=models.CASCADE, related_name='exercises')
-    exercise = models.ForeignKey(Exercises, on_delete=models.CASCADE)
+    exercise_id = models.ForeignKey(Exercises, on_delete=models.CASCADE)
     sets = models.IntegerField(
         null=True, blank=True,
         validators=[MinValueValidator(0)]
@@ -61,8 +61,30 @@ class WeightLog(models.Model):
     weight = models.FloatField(
         null=True, blank=True,
         validators=[MinValueValidator(0)]
-        )
+    )
     def __str__(self):
         return f'{self.user.username} - {self.weight} kg on {self.date}'
     
-    
+class FitnessGoal(models.Model):
+    GOAL_TYPES = [
+        ('weight', 'Weight Goal'),
+        ('exercise', 'Exercise Achievement'),
+    ]
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='fitness_goals')
+    goal_type = models.CharField(max_length=20, choices=GOAL_TYPES)
+    target_weight = models.FloatField(null=True, blank=True, validators=[MinValueValidator(0)]) 
+    exercise_id = models.ForeignKey(Exercises, on_delete=models.SET_NULL, null=True, blank=True) 
+    target_reps = models.PositiveIntegerField(
+        null=True, blank=True, default=0,
+        validators=[MinValueValidator(0)]
+    ) 
+    target_sets = models.PositiveIntegerField(
+        null=True, blank=True, default=0,
+        validators=[MinValueValidator(0)]
+    )
+    deadline = models.DateField()  
+    achieved = models.BooleanField(default=False)
+
+    def __str__(self):
+        return f"{self.user.username}'s Goal - {self.get_goal_type_display()}"

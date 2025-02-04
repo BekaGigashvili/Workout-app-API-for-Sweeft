@@ -1,9 +1,12 @@
 from django.urls import path
-from .views import WorkoutPlanCreateView, WorkoutPlanListView, WeightLogGetView, WeightLogCreateView
+from .views import (
+    WorkoutPlanListCreateAPIView,
+    WeightLogListCreateAPIView,
+    FitnessGoalListCreateAPIView,
+)
 
 urlpatterns = [
-    path('workout-plans/', WorkoutPlanListView.as_view(), name='workout-plans-list'),
-    path('workout-plans/create/', WorkoutPlanCreateView.as_view(), name='workout-plan-create'),
-    path('weight-logs/', WeightLogGetView.as_view(), name='weight_logs'),
-    path('weight-logs/create/', WeightLogCreateView.as_view(), name='weight_logs'),
+    path("workout-plans/", WorkoutPlanListCreateAPIView.as_view(), name="workout_plans"),
+    path("weight-logs/", WeightLogListCreateAPIView.as_view(), name="weight_logs"),
+    path("fitness-goals/", FitnessGoalListCreateAPIView.as_view(), name="fitness_goals"),
 ]

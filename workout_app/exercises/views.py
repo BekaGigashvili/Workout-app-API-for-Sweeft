@@ -1,58 +1,86 @@
-from django.shortcuts import render
-from rest_framework.views import APIView
+from rest_framework.generics import ListCreateAPIView
 from rest_framework.permissions import IsAuthenticated
-from .serializers import WorkoutPlanSerializer, WeightLogSerializer
-from .models import WorkoutPlan, WeightLog
-from rest_framework.response import Response
-from rest_framework import status
 from drf_yasg.utils import swagger_auto_schema
+from .models import WorkoutPlan, WeightLog, FitnessGoal
+from .serializers import (
+    WorkoutPlanSerializer,
+    WeightLogSerializer,
+    FitnessGoalSerializer,
+)
 
-class WorkoutPlanCreateView(APIView):
-    permission_classes = [IsAuthenticated]
-    @swagger_auto_schema(
-        request_body=WorkoutPlanSerializer,
-        responses={201: WorkoutPlanSerializer}
-    )
 
-    def post(self, request):
-        serializer = WorkoutPlanSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    
-class WorkoutPlanListView(APIView):
+class WorkoutPlanListCreateAPIView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
-    @swagger_auto_schema(
-        responses={200: WorkoutPlanSerializer(many=True)}
-    )
+    serializer_class = WorkoutPlanSerializer
 
-    def get(self, request):
-        workout_plans = WorkoutPlan.objects.filter(user=request.user)
-        serializer = WorkoutPlanSerializer(workout_plans, many=True)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-    
-class WeightLogCreateView(APIView):
-    permission_classes = [IsAuthenticated]
+    def get_queryset(self):
+        return WorkoutPlan.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
     @swagger_auto_schema(
-            request_body=WeightLogSerializer,
-            responses={201:WeightLogSerializer},
-            operation_description="Log a new weight entry for the authenticated user."
+        request_body=WorkoutPlanSerializer, responses={201: WorkoutPlanSerializer}
     )
-    def post(self, request):
-        serializer = WeightLogSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save(user=request.user)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status= status.HTTP_400_BAD_REQUEST)
-    
-class WeightLogGetView(APIView):
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
+    @swagger_auto_schema(responses={200: WorkoutPlanSerializer(many=True)})
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+
+class WeightLogListCreateAPIView(ListCreateAPIView):
     permission_classes = [IsAuthenticated]
+    serializer_class = WeightLogSerializer
+
+    def get_queryset(self):
+        return WeightLog.objects.filter(user=self.request.user).order_by("-date")
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+    @swagger_auto_schema(
+        request_body=WeightLogSerializer,
+        responses={201: WeightLogSerializer},
+        operation_description="Log a new weight entry for the authenticated user.",
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
     @swagger_auto_schema(
         responses={200: WeightLogSerializer(many=True)},
-        operation_description="Get a list of all weight logs for the authenticated user."
+        operation_description="Get a list of all weight logs for the authenticated user.",
     )
-    def get(self, request):
-        weight_logs = WeightLog.objects.filter(user = request.user).order_by('-date')
-        serializer = WeightLogSerializer(weight_logs, many=True)
-        return Response(serializer.data)
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+
+class FitnessGoalListCreateAPIView(ListCreateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = FitnessGoalSerializer
+
+    def get_queryset(self):
+        return FitnessGoal.objects.filter(user=self.request.user).order_by("-deadline")
+
+    def perform_create(self, serializer):
+        data = self.request.data.copy()
+
+        serializer = FitnessGoalSerializer(data=data)
+        serializer.is_valid(raise_exception=True)
+        serializer.save(user=self.request.user)
+
+    @swagger_auto_schema(
+        request_body=FitnessGoalSerializer,
+        responses={201: FitnessGoalSerializer},
+        operation_description="Log a new fitness goal entry for the authenticated user.",
+    )
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+
+    @swagger_auto_schema(
+        responses={200: FitnessGoalSerializer(many=True)},
+        operation_description="Get a list of all fitness goal logs for the authenticated user.",
+    )
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)

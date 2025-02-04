@@ -1,5 +1,7 @@
+from datetime import datetime
 from rest_framework import serializers
-from .models import Exercises, PersonalizedExercise, WorkoutPlan, WeightLog
+from .models import Exercises, PersonalizedExercise, WorkoutPlan, WeightLog, FitnessGoal
+from django.core.validators import MinValueValidator
 
 
 class ExercisesSerializer(serializers.ModelSerializer):
@@ -8,7 +10,7 @@ class ExercisesSerializer(serializers.ModelSerializer):
         fields = '__all__'
 
 class PersonalizedExerciseSerializer(serializers.ModelSerializer):
-    exercise = serializers.PrimaryKeyRelatedField(queryset = Exercises.objects.all())
+    exercise_id = serializers.PrimaryKeyRelatedField(queryset = Exercises.objects.all())
     sets = serializers.IntegerField(default=0)
     repetitions = serializers.IntegerField(default=0)
     duration = serializers.FloatField(default=0)
@@ -16,10 +18,10 @@ class PersonalizedExerciseSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = PersonalizedExercise
-        fields = ['exercise', 'sets', 'repetitions', 'duration', 'distance']
+        fields = ['exercise_id', 'sets', 'repetitions', 'duration', 'distance']
 
     def validate(self, data):
-        exercise = data.get('exercise')
+        exercise = data.get('exercise_id')
         if not exercise.distance_related:
             if not (data.get('sets') > 0 and data.get('repetitions') > 0):
                 raise serializers.ValidationError('Number of sets and repetitions must be greater than 0 for sets and repetitions related exercise.')
@@ -57,3 +59,30 @@ class WeightLogSerializer(serializers.ModelSerializer):
         model = WeightLog
         fields =['id', 'user', 'date', 'weight']
         read_only_fields = ['user']
+
+class FitnessGoalSerializer(serializers.ModelSerializer):
+    exercise_id = serializers.PrimaryKeyRelatedField(
+        queryset=Exercises.objects.all(),
+        required=False,
+        allow_null=True
+    )
+    achieved = serializers.BooleanField(default=False)
+    target_reps = serializers.IntegerField(
+        default=0,
+        min_value=0, max_value=15
+    )
+    target_sets = serializers.IntegerField(
+        default=0,
+        min_value=0, max_value=10
+    ) 
+    deadline = serializers.DateField() 
+
+    class Meta:
+        model = FitnessGoal
+        fields = ['id', 'user', 'goal_type', 'target_weight', 'exercise_id', 'target_reps', 'target_sets', 'deadline', 'achieved']
+        read_only_fields = ['user']
+
+    def validate_deadline(self, value):
+        if value < datetime.now().date():
+            raise serializers.ValidationError("Deadline cannot be in the past.")
+        return value
