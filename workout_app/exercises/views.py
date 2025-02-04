@@ -1,11 +1,13 @@
-from rest_framework.generics import ListCreateAPIView
+from django.forms import ValidationError
+from rest_framework.generics import ListCreateAPIView, UpdateAPIView
 from rest_framework.permissions import IsAuthenticated
 from drf_yasg.utils import swagger_auto_schema
-from .models import WorkoutPlan, WeightLog, FitnessGoal
+from .models import WorkoutPlan, WeightLog, FitnessGoal, WorkoutSession
 from .serializers import (
     WorkoutPlanSerializer,
     WeightLogSerializer,
     FitnessGoalSerializer,
+    WorkoutSessionSerializer,
 )
 
 
@@ -84,3 +86,28 @@ class FitnessGoalListCreateAPIView(ListCreateAPIView):
     )
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
+
+
+class WorkoutSessionCreateAPIView(ListCreateAPIView):
+    serializer_class = WorkoutSessionSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return WorkoutSession.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        personalized_exercise = serializer.validated_data['personalized_exercise']
+        if personalized_exercise.workout_plan.user != self.request.user:
+            raise ValidationError('You dont own this exercise')
+
+        serializer.save(user=self.request.user)
+
+class WorkoutSessionUpdateAPIView(UpdateAPIView):
+    permission_classes = [IsAuthenticated]
+    serializer_class = WorkoutSessionSerializer
+    http_method_names = ['put'] 
+
+    def get_queryset(self):
+        if not self.request.user.is_authenticated:
+            return WorkoutSession.objects.none()
+        return WorkoutSession.objects.filter(user=self.request.user)

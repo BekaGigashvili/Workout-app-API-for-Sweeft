@@ -88,3 +88,33 @@ class FitnessGoal(models.Model):
 
     def __str__(self):
         return f"{self.user.username}'s Goal - {self.get_goal_type_display()}"
+
+
+class WorkoutSession(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='workout_sessions')
+    personalized_exercise = models.OneToOneField(
+        PersonalizedExercise, 
+        on_delete=models.CASCADE,
+        related_name='sessions',
+        null=True,  
+        blank=True,
+        unique=True
+    )
+    current_sets = models.IntegerField(
+        default=0,
+        validators=[MinValueValidator(0)]
+    )
+    current_repetitions = models.IntegerField(
+        default=0,
+        validators=[MinValueValidator(0)]
+    )
+    current_distance = models.FloatField(
+        validators=[MinValueValidator(0)],
+        null=True,
+        blank=True
+    )
+    completed = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.user.username}'s Session - {self.personalized_exercise.exercise_id.name}"
