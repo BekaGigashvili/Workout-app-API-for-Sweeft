@@ -54,3 +54,15 @@ class PersonalizedExercise(models.Model):
         null = True, blank=True,
         validators=[MinValueValidator(0)]
     )
+
+class WeightLog(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='weight_logs')
+    date = models.DateField(auto_now_add=True)
+    weight = models.FloatField(
+        null=True, blank=True,
+        validators=[MinValueValidator(0)]
+        )
+    def __str__(self):
+        return f'{self.user.username} - {self.weight} kg on {self.date}'
+    
+    

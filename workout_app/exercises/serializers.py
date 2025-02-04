@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Exercises, PersonalizedExercise, WorkoutPlan
+from .models import Exercises, PersonalizedExercise, WorkoutPlan, WeightLog
 
 
 class ExercisesSerializer(serializers.ModelSerializer):
@@ -51,3 +51,9 @@ class WorkoutPlanSerializer(serializers.ModelSerializer):
                 workout_plan.delete()
                 raise serializers.ValidationError(f"Error creating personalized exercise: {str(e)}")
         return workout_plan
+    
+class WeightLogSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = WeightLog
+        fields =['id', 'user', 'date', 'weight']
+        read_only_fields = ['user']
